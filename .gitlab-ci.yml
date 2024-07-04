@@ -1,0 +1,35 @@
+include:
+
+  # include the entire docker pipeline to build the backend docker image
+  - project: 'resengit/gitlab/pipeline-helpers'
+    ref: main
+    file: '/pipelines/docker-image.yaml'
+
+  # also include the templates for golang to define the job to build the shell client binary
+  - project: 'resengit/gitlab/pipeline-helpers'
+    ref: main
+    file: '/jobs/golang.yaml'
+
+variables:
+  PH_CUSTOM_DOCKER_BUILD_CONTEXT_FOLDER: backend
+  PH_DOCKER_IMAGE_PATH: icos/shell-backend
+
+# Client Jobs
+
+cli-compile:
+  extends: .go-job-compile
+  variables:
+    PH_GO_SRC_DIR: client
+    PH_GO_OUTPUT_FILENAME: icosctl
+
+# cli-lint:
+#   extends: .go-job-lint
+#   allow_failure: true
+#   variables:
+#     PH_GO_SRC_DIR: client
+
+# cli-test:
+#   extends: .go-job-test
+#   allow_failure: true
+#   variables:
+#     PH_GO_SRC_DIR: client
