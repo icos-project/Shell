@@ -20,6 +20,35 @@ import (
 	"github.com/spf13/viper"
 )
 
+// CORS middleware function
+func enableCors(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set the CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Use "*" to allow all, or specify a specific origin
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, api_key")
+
+		// Handle preflight request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler in the chain
+		next.ServeHTTP(w, r)
+	})
+}
+
+// Logging middleware function
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Log the request method and URL
+		log.Printf("Received a %s request for %s", r.Method, r.URL.Path)
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 
 	cfgFile := flag.String("config", "config.yml", "config file")
@@ -50,7 +79,15 @@ func main() {
 	UserApiService := shellbackend.NewUserAPIService()
 	UserApiController := shellbackend.NewUserAPIController(UserApiService)
 
-	router := shellbackend.NewRouter(ControllerApiController, DefaultApiController, DeploymentApiController, ResourceApiController, UserApiController)
+	PredictApiService := shellbackend.NewPredictAPIService()
+	PredictApiController := shellbackend.NewPredictAPIController(PredictApiService)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	TrainApiService := shellbackend.NewTrainAPIService()
+	TrainApiController := shellbackend.NewTrainAPIController(TrainApiService)
+
+	router := shellbackend.NewRouter(ControllerApiController, DefaultApiController, DeploymentApiController, ResourceApiController, UserApiController, PredictApiController, TrainApiController)
+
+	handlerWithCors := enableCors(loggingMiddleware(router))
+
+	log.Fatal(http.ListenAndServe(":8080", handlerWithCors))
 }

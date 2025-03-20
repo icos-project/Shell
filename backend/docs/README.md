@@ -14,10 +14,13 @@ All URIs are relative to *http://localhost:8080/api/v3*
 *DeploymentApi* | [**deleteDeploymentById**](Apis/DeploymentApi.md#deletedeploymentbyid) | **DELETE** /deployment/{deploymentId} | Deletes a deployment |
 *DeploymentApi* | [**getDeploymentById**](Apis/DeploymentApi.md#getdeploymentbyid) | **GET** /deployment/{deploymentId} | Find deployment by ID |
 *DeploymentApi* | [**getDeployments**](Apis/DeploymentApi.md#getdeployments) | **GET** /deployment/ | Returns a list of deployments |
-*DeploymentApi* | [**stopDeploymentById**](Apis/DeploymentApi.md#stopdeploymentbyid) | **DELETE** /deployment/{deploymentId}/stop | Stops a deployment |
+*DeploymentApi* | [**startDeploymentById**](Apis/DeploymentApi.md#startdeploymentbyid) | **PUT** /deployment/{deploymentId}/start | Starts a deployment |
+*DeploymentApi* | [**stopDeploymentById**](Apis/DeploymentApi.md#stopdeploymentbyid) | **PUT** /deployment/{deploymentId}/stop | Stops a deployment |
 *DeploymentApi* | [**updateDeployment**](Apis/DeploymentApi.md#updatedeployment) | **PUT** /deployment/{deploymentId} | Updates a deployment |
+| *PredictApi* | [**predictMetrics**](Apis/PredictApi.md#predictmetrics) | **POST** /metrics/predict | Predict metrics development based on model and input metrics |
 | *ResourceApi* | [**getResourceById**](Apis/ResourceApi.md#getresourcebyid) | **GET** /resource/{resourceId} | Find resource by ID |
 *ResourceApi* | [**getResources**](Apis/ResourceApi.md#getresources) | **GET** /resource/ | Returns a list of resources |
+| *TrainApi* | [**trainMetrics**](Apis/TrainApi.md#trainmetrics) | **POST** /metrics/train | Trains a model on a set of metrics |
 | *UserApi* | [**loginUser**](Apis/UserApi.md#loginuser) | **GET** /user/login | Logs user into the system |
 *UserApi* | [**logoutUser**](Apis/UserApi.md#logoutuser) | **GET** /user/logout | Logs out current logged in user session |
 

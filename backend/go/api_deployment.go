@@ -51,37 +51,55 @@ func NewDeploymentAPIController(s DeploymentAPIServicer, opts ...DeploymentAPIOp
 // Routes returns all the api routes for the DeploymentAPIController
 func (c *DeploymentAPIController) Routes() Routes {
 	return Routes{
+		"GetDeployments": Route{
+			strings.ToUpper("Get"),
+			"/api/v3/deployment/",
+			c.GetDeployments,
+		},
 		"CreateDeployment": Route{
 			strings.ToUpper("Post"),
 			"/api/v3/deployment/",
 			c.CreateDeployment,
-		},
-		"DeleteDeploymentById": Route{
-			strings.ToUpper("Delete"),
-			"/api/v3/deployment/{deploymentId}",
-			c.DeleteDeploymentById,
 		},
 		"GetDeploymentById": Route{
 			strings.ToUpper("Get"),
 			"/api/v3/deployment/{deploymentId}",
 			c.GetDeploymentById,
 		},
-		"GetDeployments": Route{
-			strings.ToUpper("Get"),
-			"/api/v3/deployment/",
-			c.GetDeployments,
-		},
-		"StopDeploymentById": Route{
-			strings.ToUpper("Delete"),
-			"/api/v3/deployment/{deploymentId}/stop",
-			c.StopDeploymentById,
-		},
 		"UpdateDeployment": Route{
 			strings.ToUpper("Put"),
 			"/api/v3/deployment/{deploymentId}",
 			c.UpdateDeployment,
 		},
+		"DeleteDeploymentById": Route{
+			strings.ToUpper("Delete"),
+			"/api/v3/deployment/{deploymentId}",
+			c.DeleteDeploymentById,
+		},
+		"StartDeploymentById": Route{
+			strings.ToUpper("Put"),
+			"/api/v3/deployment/{deploymentId}/start",
+			c.StartDeploymentById,
+		},
+		"StopDeploymentById": Route{
+			strings.ToUpper("Put"),
+			"/api/v3/deployment/{deploymentId}/stop",
+			c.StopDeploymentById,
+		},
 	}
+}
+
+// GetDeployments - Returns a list of deployments
+func (c *DeploymentAPIController) GetDeployments(w http.ResponseWriter, r *http.Request) {
+	apiKeyParam := r.Header.Get("api_key")
+	result, err := c.service.GetDeployments(r.Context(), apiKeyParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
 // CreateDeployment - Creates a new deployment
@@ -95,25 +113,6 @@ func (c *DeploymentAPIController) CreateDeployment(w http.ResponseWriter, r *htt
 	}
 	apiKeyParam := r.Header.Get("api_key")
 	result, err := c.service.CreateDeployment(r.Context(), bodyParam, apiKeyParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// DeleteDeploymentById - Deletes a deployment
-func (c *DeploymentAPIController) DeleteDeploymentById(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	deploymentIdParam := params["deploymentId"]
-	if deploymentIdParam == "" {
-		c.errorHandler(w, r, &RequiredError{"deploymentId"}, nil)
-		return
-	}
-	apiKeyParam := r.Header.Get("api_key")
-	result, err := c.service.DeleteDeploymentById(r.Context(), deploymentIdParam, apiKeyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -142,10 +141,61 @@ func (c *DeploymentAPIController) GetDeploymentById(w http.ResponseWriter, r *ht
 	_ = EncodeJSONResponse(result.Body, &result.Code, w)
 }
 
-// GetDeployments - Returns a list of deployments
-func (c *DeploymentAPIController) GetDeployments(w http.ResponseWriter, r *http.Request) {
+// UpdateDeployment - Updates a deployment
+func (c *DeploymentAPIController) UpdateDeployment(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	deploymentIdParam := params["deploymentId"]
+	if deploymentIdParam == "" {
+		c.errorHandler(w, r, &RequiredError{"deploymentId"}, nil)
+		return
+	}
+	bodyParam := map[string]interface{}{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&bodyParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	apiKeyParam := r.Header.Get("api_key")
-	result, err := c.service.GetDeployments(r.Context(), apiKeyParam)
+	result, err := c.service.UpdateDeployment(r.Context(), deploymentIdParam, bodyParam, apiKeyParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// DeleteDeploymentById - Deletes a deployment
+func (c *DeploymentAPIController) DeleteDeploymentById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	deploymentIdParam := params["deploymentId"]
+	if deploymentIdParam == "" {
+		c.errorHandler(w, r, &RequiredError{"deploymentId"}, nil)
+		return
+	}
+	apiKeyParam := r.Header.Get("api_key")
+	result, err := c.service.DeleteDeploymentById(r.Context(), deploymentIdParam, apiKeyParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// StartDeploymentById - Starts a deployment
+func (c *DeploymentAPIController) StartDeploymentById(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	deploymentIdParam := params["deploymentId"]
+	if deploymentIdParam == "" {
+		c.errorHandler(w, r, &RequiredError{"deploymentId"}, nil)
+		return
+	}
+	apiKeyParam := r.Header.Get("api_key")
+	result, err := c.service.StartDeploymentById(r.Context(), deploymentIdParam, apiKeyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
@@ -165,32 +215,6 @@ func (c *DeploymentAPIController) StopDeploymentById(w http.ResponseWriter, r *h
 	}
 	apiKeyParam := r.Header.Get("api_key")
 	result, err := c.service.StopDeploymentById(r.Context(), deploymentIdParam, apiKeyParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	_ = EncodeJSONResponse(result.Body, &result.Code, w)
-}
-
-// UpdateDeployment - Updates a deployment
-func (c *DeploymentAPIController) UpdateDeployment(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	deploymentIdParam := params["deploymentId"]
-	if deploymentIdParam == "" {
-		c.errorHandler(w, r, &RequiredError{"deploymentId"}, nil)
-		return
-	}
-	bodyParam := map[string]interface{}{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&bodyParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	apiKeyParam := r.Header.Get("api_key")
-	result, err := c.service.UpdateDeployment(r.Context(), deploymentIdParam, bodyParam, apiKeyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
