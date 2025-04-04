@@ -55,11 +55,9 @@ type APIClient struct {
 
 	DeploymentAPI *DeploymentAPIService
 
-	PredictAPI *PredictAPIService
+	MetricsAPI *MetricsAPIService
 
 	ResourceAPI *ResourceAPIService
-
-	TrainAPI *TrainAPIService
 
 	UserAPI *UserAPIService
 }
@@ -83,9 +81,8 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.ControllerAPI = (*ControllerAPIService)(&c.common)
 	c.DefaultAPI = (*DefaultAPIService)(&c.common)
 	c.DeploymentAPI = (*DeploymentAPIService)(&c.common)
-	c.PredictAPI = (*PredictAPIService)(&c.common)
+	c.MetricsAPI = (*MetricsAPIService)(&c.common)
 	c.ResourceAPI = (*ResourceAPIService)(&c.common)
-	c.TrainAPI = (*TrainAPIService)(&c.common)
 	c.UserAPI = (*UserAPIService)(&c.common)
 
 	return c
@@ -145,6 +142,10 @@ func typeCheckParameter(obj interface{}, expected string, name string) error {
 
 func parameterValueToString( obj interface{}, key string ) string {
 	if reflect.TypeOf(obj).Kind() != reflect.Ptr {
+		if actualObj, ok := obj.(interface{ GetActualInstanceValue() interface{} }); ok {
+			return fmt.Sprintf("%v", actualObj.GetActualInstanceValue())
+		}
+
 		return fmt.Sprintf("%v", obj)
 	}
 	var param,ok = obj.(MappedNullable)

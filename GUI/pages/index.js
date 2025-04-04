@@ -16,7 +16,7 @@ export default function eCommerce() {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         const token = Cookies.get('authToken');
-        const controllerBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const controllerBaseUrl = process.env.NEXT_PUBLIC_CONTROLLER_ADDRESS;
 
         if (!token) {
             router.push("/authentication/sign-in/");
@@ -46,7 +46,7 @@ export default function eCommerce() {
         <>
             {/* Page title */}
             <div className={styles.pageTitle}>
-                <h1>Topology</h1>
+                <h1>ICOS Ecosystem</h1>
                 <ul>
                     <li>
                         <Link href="/">Dashboard</Link>
