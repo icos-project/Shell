@@ -50,21 +50,79 @@ func NewMetricsAPIController(s MetricsAPIServicer, opts ...MetricsAPIOption) *Me
 func (c *MetricsAPIController) Routes() Routes {
 	return Routes{
 		"TrainMetrics": Route{
+			"TrainMetrics",
 			strings.ToUpper("Post"),
 			"/api/v3/metrics/train",
 			c.TrainMetrics,
 		},
 		"PredictMetrics": Route{
+			"PredictMetrics",
 			strings.ToUpper("Post"),
 			"/api/v3/metrics/predict",
 			c.PredictMetrics,
 		},
 		"DeleteMetrics": Route{
+			"DeleteMetrics",
 			strings.ToUpper("Post"),
 			"/api/v3/metrics/delete",
 			c.DeleteMetrics,
 		},
+		"StopMetrics": Route{
+			"StopMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/stop",
+			c.StopMetrics,
+		},
+		"UnregisterMetrics": Route{
+			"UnregisterMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/unregister",
+			c.UnregisterMetrics,
+		},
 		"GetMetrics": Route{
+			"GetMetrics",
+			strings.ToUpper("Get"),
+			"/api/v3/metrics/get",
+			c.GetMetrics,
+		},
+	}
+}
+
+// OrderedRoutes returns all the api routes in a deterministic order for the MetricsAPIController
+func (c *MetricsAPIController) OrderedRoutes() []Route {
+	return []Route{
+		Route{
+			"TrainMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/train",
+			c.TrainMetrics,
+		},
+		Route{
+			"PredictMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/predict",
+			c.PredictMetrics,
+		},
+		Route{
+			"StopMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/stop",
+			c.StopMetrics,
+		},
+		Route{
+			"UnregisterMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/unregister",
+			c.UnregisterMetrics,
+		},
+		Route{
+			"DeleteMetrics",
+			strings.ToUpper("Post"),
+			"/api/v3/metrics/delete",
+			c.DeleteMetrics,
+		},
+		Route{
+			"GetMetrics",
 			strings.ToUpper("Get"),
 			"/api/v3/metrics/get",
 			c.GetMetrics,
@@ -103,6 +161,46 @@ func (c *MetricsAPIController) PredictMetrics(w http.ResponseWriter, r *http.Req
 	}
 	apiKeyParam := r.Header.Get("api_key")
 	result, err := c.service.PredictMetrics(r.Context(), bodyParam, apiKeyParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// StopMetrics - Stops metrics
+func (c *MetricsAPIController) StopMetrics(w http.ResponseWriter, r *http.Request) {
+	var bodyParam map[string]interface{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&bodyParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	apiKeyParam := r.Header.Get("api_key")
+	result, err := c.service.StopMetrics(r.Context(), bodyParam, apiKeyParam)
+	// If an error occurred, encode the error with the status code
+	if err != nil {
+		c.errorHandler(w, r, err, &result)
+		return
+	}
+	// If no error, encode the body and the result code
+	_ = EncodeJSONResponse(result.Body, &result.Code, w)
+}
+
+// UnregisterMetrics - Stops metrics
+func (c *MetricsAPIController) UnregisterMetrics(w http.ResponseWriter, r *http.Request) {
+	var bodyParam map[string]interface{}
+	d := json.NewDecoder(r.Body)
+	d.DisallowUnknownFields()
+	if err := d.Decode(&bodyParam); err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	apiKeyParam := r.Header.Get("api_key")
+	result, err := c.service.UnregisterMetrics(r.Context(), bodyParam, apiKeyParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {
 		c.errorHandler(w, r, err, &result)
